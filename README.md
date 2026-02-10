@@ -23,6 +23,7 @@ Script Logic Analysis
 The script used a loop to ensure the attack remained active:
 
 Bash
+
 #!/bin/bash
 
 while true; do
