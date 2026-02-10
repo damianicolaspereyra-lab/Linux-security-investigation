@@ -1,29 +1,29 @@
-Cybersecurity Investigation Report: Linux Systems Security
-This report documents the resolution of two security incidents investigated as part of the Jedha Cybersecurity Course. The investigation focuses on process persistence, resource exhaustion, and unauthorized network traffic.
+# Cybersecurity Investigation Report: Linux Systems Security
 
-1. Incident: High CPU Resource Exhaustion
-Issue Description
-A Linux workstation experienced critical performance degradation with a Load Average of 5.32. All CPU cores were pinned at 100% usage due to multiple suspicious processes.
+This report documents the resolution of two security incidents investigated as part of the **Jedha Cybersecurity Course**. The investigation focuses on process persistence, resource exhaustion, and unauthorized network traffic analysis.
 
-Identification & Analysis
-Using system monitoring tools, the culprit was identified as several instances of the dd command.
+---
 
-Command: dd if=/dev/zero of=/dev/null.
+## 1. Incident: High CPU Resource Exhaustion
 
-Impact: This command performs continuous null data transfers, saturating CPU cycles without any productive output.
+### Issue Description
+A Linux workstation experienced critical performance degradation with a **Load Average of 5.32**. All CPU cores were pinned at **100% usage** due to multiple suspicious processes.
 
-Persistence Mechanism
-The investigation revealed that the dd processes were managed by a supervisor script.
+### Identification & Analysis
+Using system monitoring tools, the culprit was identified as several instances of the `dd` command.
 
-Script Location: /usr/local/bin/backup.sh.
+* **Command**: `dd if=/dev/zero of=/dev/null`
+* **Impact**: This command performs continuous null data transfers, saturating CPU cycles without any productive output.
 
-Parent Process ID (PPID): 1 (systemd/init), indicating it was running as a system-level daemon.
+### Persistence Mechanism
+The investigation revealed that the `dd` processes were managed by a supervisor script.
+* **Script Location**: `/usr/local/bin/backup.sh`
+* **Parent Process ID (PPID)**: **1** (`systemd/init`), indicating it was running as a system-level daemon.
 
-Script Logic Analysis
-The script used a loop to ensure the attack remained active:
+### Script Logic Analysis
+The script used an infinite loop to ensure the attack remained active:
 
-Bash
-
+```bash
 #!/bin/bash
 
 while true; do
@@ -36,7 +36,8 @@ while true; do
   fi
   sleep 30
 done
-This logic explains why terminating individual dd processes was ineffective; the script would respawn them within 30 seconds.
+
+This logic explains why terminating individual dd processes was ineffective; the script would respawn them every 30 seconds.
 
 2. Incident: Unauthorized Network Traffic
 Issue Description
@@ -45,15 +46,15 @@ Global monitoring detected suspicious outbound traffic targeting the external IP
 Investigation Methodology
 Because the traffic was intermittent, the ss (socket statistics) command was combined with watch for real-time capture.
 
-Bash
 # Monitoring outbound connections to the target IP
 sudo watch -n 0.1 "ss -atp | grep 192.0.2.1"
+
 Findings
-Program Identified: curl.
+Program Identified: curl
 
 Technical State: Captured in SYN-SENT state, attempting to connect to the target via port 80 (HTTP).
 
-Process ID (PID): 18557.
+Process ID (PID): 18557
 
 Security Conclusions
 Persistence: The repetitive execution of curl suggests an automated trigger, likely a cron job or a background loop.
@@ -61,12 +62,8 @@ Persistence: The repetitive execution of curl suggests an automated trigger, lik
 Vulnerability: The primary issue was the lack of Egress Filtering. The system allowed internal processes to initiate arbitrary outbound connections to unknown external IPs.
 
 Investigator Metadata
-User: Pereyra.
+User: Pereyra
 
-Institution: Jedha Cybersecurity School.
+Institution: Jedha Cybersecurity School
 
-System: Ubuntu Lab Jedha Environment.
-
-Organization: Jedha Cybersecurity School
-
-Date: February 10, 2026.
+System: Ubuntu Lab Environment
